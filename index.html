@@ -6,239 +6,269 @@
     <title>KBC Game</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #0f0429, #811cca);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #0f0429, #811cca);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-        .money-tree {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            width: 250px;
-            text-align: left;
-            background: rgba(0, 0, 0, 0.3);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            padding: 10px;
-        }
+/* Money Tree */
+.money-tree {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 90%;
+    max-width: 250px;
+    text-align: left;
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    padding: 10px;
+}
 
-        .money-level {
-            padding: 8px 10px;
-            margin: 2px 0;
-            display: flex;
-            align-items: center;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            border-radius: 5px;
-        }
+.money-level {
+    padding: 8px 10px;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+}
 
-        .money-level.current {
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            color: black;
-            font-weight: bold;
-            padding-left: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+.money-level.current {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: black;
+    font-weight: bold;
+    padding-left: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
 
-        .money-level .question-number {
-            margin-right: 10px;
-            min-width: 20px;
-            font-weight: bold;
-        }
+.money-level .question-number {
+    margin-right: 10px;
+    min-width: 20px;
+    font-weight: bold;
+}
 
-        .game-container {
-            margin-top: 20px;
-            width: 90%;
-            max-width: 800px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+/* Game Container */
+.game-container {
+    margin-top: 20px;
+    width: 90%;
+    max-width: 800px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
 
-        .question {
-            font-size: 24px;
-            margin: 20px 0;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
-            line-height: 1.4;
-        }
+/* Question */
+.question {
+    font-size: 22px;
+    margin: 20px 0;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+    line-height: 1.4;
+}
 
-        .options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
+/* Options */
+.options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+}
 
-        .option {
-            background: linear-gradient(45deg, #0d47a1, #1976d2);
-            border: 2px solid rgba(255,255,255,0.3);
-            padding: 15px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 18px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
+.option {
+    background: linear-gradient(45deg, #0d47a1, #1976d2);
+    border: 2px solid rgba(255,255,255,0.3);
+    padding: 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
 
-        .option:hover {
-            background: linear-gradient(45deg, #1976d2, #0d47a1);
-            transform: scale(1.02);
-            border-color: rgba(255,255,255,0.8);
-        }
+.option:hover {
+    background: linear-gradient(45deg, #1976d2, #0d47a1);
+    transform: scale(1.02);
+    border-color: rgba(255,255,255,0.8);
+}
 
-        .lifelines {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-        }
+/* Lifelines */
+.lifelines {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
 
-        .lifeline {
-            background: linear-gradient(45deg, #ffa000, #ff6f00);
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+.lifeline {
+    background: linear-gradient(45deg, #ffa000, #ff6f00);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    min-width: 120px;
+}
 
-        .lifeline:hover:not(.used) {
-            background: linear-gradient(45deg, #ff6f00, #ffa000);
-            transform: scale(1.05);
-        }
+.lifeline:hover:not(.used) {
+    background: linear-gradient(45deg, #ff6f00, #ffa000);
+    transform: scale(1.05);
+}
 
-        .lifeline.used {
-            background: #666;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+.lifeline.used {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
 
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            color: black;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
+/* Popups */
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    color: black;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    z-index: 1000;
+    width: 90%;
+    max-width: 400px;
+}
 
-        .audience-poll-chart {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            height: 200px;
-            padding: 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            margin: 20px 0;
-        }
+/* Audience Poll */
+.audience-poll-chart {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 180px;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    margin: 20px 0;
+}
 
-        .poll-bar {
-            width: 40px;
-            background: linear-gradient(to top, #4CAF50, #81C784);
-            position: relative;
-            transition: height 1s ease;
-            border-radius: 5px 5px 0 0;
-        }
+.poll-bar {
+    width: 30px;
+    background: linear-gradient(to top, #4CAF50, #81C784);
+    position: relative;
+    transition: height 1s ease;
+    border-radius: 5px 5px 0 0;
+}
 
-        .poll-percentage {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            white-space: nowrap;
-        }
+.poll-percentage {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+}
 
-        .phone-friend-dialog {
-            background: white;
-            color: black;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 300px;
-            text-align: left;
-        }
+/* Phone-a-Friend */
+.phone-friend-dialog {
+    background: white;
+    color: black;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 300px;
+    text-align: left;
+}
 
-        .friend-thinking {
-            color: #666;
-            font-style: italic;
-            margin: 10px 0;
-        }
+.friend-thinking {
+    color: #666;
+    font-style: italic;
+    margin: 10px 0;
+}
 
-        .friend-answer {
-            font-weight: bold;
-            color: #2196F3;
-        }
+.friend-answer {
+    font-weight: bold;
+    color: #2196F3;
+}
 
-        .retry-button {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-        }
+/* Retry Button */
+.retry-button {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
 
-        .retry-button:hover {
-            background: linear-gradient(45deg, #45a049, #4CAF50);
-            transform: scale(1.05);
-        }
+.retry-button:hover {
+    background: linear-gradient(45deg, #45a049, #4CAF50);
+    transform: scale(1.05);
+}
 
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 999;
-        }
+/* Overlay */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 999;
+}
 
-        @keyframes blinkGreen {
-            0% { background: linear-gradient(45deg, #4CAF50, #81C784); }
-            50% { background: linear-gradient(45deg, #81C784, #A5D6A7); }
-            100% { background: linear-gradient(45deg, #4CAF50, #81C784); }
-        }
+/* Animations */
+@keyframes blinkGreen {
+    0% { background: linear-gradient(45deg, #4CAF50, #81C784); }
+    50% { background: linear-gradient(45deg, #81C784, #A5D6A7); }
+    100% { background: linear-gradient(45deg, #4CAF50, #81C784); }
+}
 
-        @keyframes blinkRed {
-            0% { background: linear-gradient(45deg, #D32F2F, #FF5252); }
-            50% { background: linear-gradient(45deg, #FF5252, #FFCDD2); }
-            100% { background: linear-gradient(45deg, #D32F2F, #FF5252); }
-        }
+@keyframes blinkRed {
+    0% { background: linear-gradient(45deg, #D32F2F, #FF5252); }
+    50% { background: linear-gradient(45deg, #FF5252, #FFCDD2); }
+    100% { background: linear-gradient(45deg, #D32F2F, #FF5252); }
+}
 
-        .blink-green {
-            animation: blinkGreen 0.5s 4;
-        }
+.blink-green {
+    animation: blinkGreen 0.5s 4;
+}
 
-        .blink-red {
-            animation: blinkRed 0.5s 4;
-        }
+.blink-red {
+    animation: blinkRed 0.5s 4;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .options {
+        grid-template-columns: 1fr;
+    }
+    .question {
+        font-size: 20px;
+    }
+    .option {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
     </style>
 </head>
 <body>
