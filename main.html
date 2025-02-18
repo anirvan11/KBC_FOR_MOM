@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBC Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f0429, #811cca);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .money-tree {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 250px;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .money-level {
+            padding: 8px 10px;
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .money-level.current {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: black;
+            font-weight: bold;
+            padding-left: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .money-level .question-number {
+            margin-right: 10px;
+            min-width: 20px;
+            font-weight: bold;
+        }
+
+        .game-container {
+            margin-top: 20px;
+            width: 90%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .question {
+            font-size: 24px;
+            margin: 20px 0;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .option {
+            background: linear-gradient(45deg, #0d47a1, #1976d2);
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option:hover {
+            background: linear-gradient(45deg, #1976d2, #0d47a1);
+            transform: scale(1.02);
+            border-color: rgba(255,255,255,0.8);
+        }
+
+        .lifelines {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .lifeline {
+            background: linear-gradient(45deg, #ffa000, #ff6f00);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .lifeline:hover:not(.used) {
+            background: linear-gradient(45deg, #ff6f00, #ffa000);
+            transform: scale(1.05);
+        }
+
+        .lifeline.used {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .audience-poll-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 200px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .poll-bar {
+            width: 40px;
+            background: linear-gradient(to top, #4CAF50, #81C784);
+            position: relative;
+            transition: height 1s ease;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .poll-percentage {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .phone-friend-dialog {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 300px;
+            text-align: left;
+        }
+
+        .friend-thinking {
+            color: #666;
+            font-style: italic;
+            margin: 10px 0;
+        }
+
+        .friend-answer {
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .retry-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .retry-button:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: scale(1.05);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+        }
+
+        @keyframes blinkGreen {
+            0% { background: linear-gradient(45deg, #4CAF50, #81C784); }
+            50% { background: linear-gradient(45deg, #81C784, #A5D6A7); }
+            100% { background: linear-gradient(45deg, #4CAF50, #81C784); }
+        }
+
+        @keyframes blinkRed {
+            0% { background: linear-gradient(45deg, #D32F2F, #FF5252); }
+            50% { background: linear-gradient(45deg, #FF5252, #FFCDD2); }
+            100% { background: linear-gradient(45deg, #D32F2F, #FF5252); }
+        }
+
+        .blink-green {
+            animation: blinkGreen 0.5s 4;
+        }
+
+        .blink-red {
+            animation: blinkRed 0.5s 4;
+        }
+    </style>
+</head>
+<body>
+    <div class="money-tree">
+        <div class="money-level"><span class="question-number">12</span> ₹1 Crore</div>
+        <div class="money-level"><span class="question-number">11</span> ₹50,00,000</div>
+        <div class="money-level"><span class="question-number">10</span> ₹25,00,000</div>
+        <div class="money-level"><span class="question-number">9</span> ₹12,50,000</div>
+        <div class="money-level"><span class="question-number">8</span> ₹6,40,000</div>
+        <div class="money-level"><span class="question-number">7</span> ₹3,20,000</div>
+        <div class="money-level"><span class="question-number">6</span> ₹1,60,000</div>
+        <div class="money-level"><span class="question-number">5</span> ₹80,000</div>
+        <div class="money-level"><span class="question-number">4</span> ₹40,000</div>
+        <div class="money-level"><span class="question-number">3</span> ₹20,000</div>
+        <div class="money-level"><span class="question-number">2</span> ₹10,000</div>
+        <div class="money-level"><span class="question-number">1</span> ₹5,000</div>
+    </div>
+
+    <div class="game-container">
+        <div class="question" id="question">Loading question...</div>
+        <div class="options">
+            <div class="option" onclick="checkAnswer(0)" id="opt0">A:</div>
+            <div class="option" onclick="checkAnswer(1)" id="opt1">B:</div>
+            <div class="option" onclick="checkAnswer(2)" id="opt2">C:</div>
+            <div class="option" onclick="checkAnswer(3)" id="opt3">D:</div>
+        </div>
+        <div class="lifelines">
+            <button class="lifeline" onclick="use5050()" id="lifeline-5050">50:50</button>
+            <button class="lifeline" onclick="useAudiencePoll()" id="lifeline-audience">Audience Poll</button>
+            <button class="lifeline" onclick="usePhoneAFriend()" id="lifeline-phone">Phone-a-Friend</button>
+            <button class="lifeline" onclick="useFlip()" id="lifeline-flip">Flip the Question</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="popup" id="gamePopup">
+        <p id="popupMessage"></p>
+        <button class="retry-button" onclick="restartGame()">Play Again</button>
+    </div>
+
+    <div class="popup" id="audiencePollPopup">
+        <h3>Audience Poll Results</h3>
+        <div class="audience-poll-chart" id="pollChart">
+            <div class="poll-bar" id="pollA">
+                <span class="poll-percentage">0%</span>
+            </div>
+            <div class="poll-bar" id="pollB">
+                <span class="poll-percentage">0%</span>
+            </div>
+            <div class="poll-bar" id="pollC">
+                <span class="poll-percentage">0%</span>
+            </div>
+            <div class="poll-bar" id="pollD">
+                <span class="poll-percentage">0%</span>
+            </div>
+        </div>
+        <button class="retry-button" onclick="closePopup('audiencePollPopup')">Close</button>
+    </div>
+
+    <div class="popup" id="phoneFriendPopup">
+        <div class="phone-friend-dialog">
+            <h3>Phone A Friend</h3>
+            <p class="friend-thinking">Thinking...</p>
+            <p class="friend-answer" id="friendAnswer"></p>
+        </div>
+        <button class="retry-button" onclick="closePopup('phoneFriendPopup')">Close</button>
+    </div>
+
+    <script>
+        // Your questions array will go here
+
+        let questions = [// 1Politics & Current Affairs
+    { q: "Who was appointed as India's first Chief of Defence Staff in 2019?", options: ["General Bipin Rawat", "General M M Naravane", "Admiral Karambir Singh", "Air Chief Marshal RKS Bhadauria"], answer: 0 },
+    { q: "Which Indian state changed its capital from Amaravati to Visakhapatnam in 2024?", options: ["Telangana", "Karnataka", "Andhra Pradesh", "Tamil Nadu"], answer: 2 },
+    { q: "Who is the first tribal woman President of India?", options: ["Pratibha Patil", "Droupadi Murmu", "Meira Kumar", "Sumitra Mahajan"], answer: 1 },
+    { q: "The Kartavya Path in New Delhi was formerly known as?", options: ["Rajpath", "Parliament Marg", "India Gate Road", "Raisina Road"], answer: 0 },
+    { q: "Which country became the fourth nation to soft-land on the Moon in 2023?", options: ["Israel", "Japan", "India", "UAE"], answer: 2 },
+    
+    // 2Science & Technology
+    { q: "What is the name of ISRO's lunar mission that discovered water molecules on Moon?", options: ["Chandrayaan-1", "Chandrayaan-2", "Chandrayaan-3", "Mangalyaan"], answer: 0 },
+    { q: "Which Indian scientist is known as the 'Missile Man of India'?", options: ["C.V. Raman", "Homi Bhabha", "A.P.J. Abdul Kalam", "Vikram Sarabhai"], answer: 2 },
+    { q: "What is the name of India's first solar mission launched in 2023?", options: ["Surya-1", "Aditya-L1", "Sun-1", "Solar Orbiter"], answer: 1 },
+    { q: "Which is the world's largest radio telescope located in India?", options: ["GMRT", "Arecibo", "FAST", "VLA"], answer: 0 },
+    { q: "What is the name of India's indigenous fighter aircraft?", options: ["Tejas", "Sukhoi", "MiG", "Rafale"], answer: 0 },
+
+    // 3Sports
+    { q: "Who is the first Indian to win an individual Olympic gold medal?", options: ["P.T. Usha", "Abhinav Bindra", "Neeraj Chopra", "Mary Kom"], answer: 1 },
+    { q: "Which Indian cricketer has scored the most international centuries?", options: ["Sachin Tendulkar", "Virat Kohli", "Sunil Gavaskar", "Rohit Sharma"], answer: 1 },
+    { q: "In which year did India win its first Cricket World Cup?", options: ["1975", "1983", "1987", "2011"], answer: 1 },
+    { q: "Who is the first Indian woman to win two Olympic medals?", options: ["P.V. Sindhu", "Saina Nehwal", "Mary Kom", "Mirabai Chanu"], answer: 0 },
+    { q: "Which Indian chess player became the youngest Grandmaster in 2021?", options: ["Viswanathan Anand", "R Praggnanandhaa", "D Gukesh", "Rameshbabu Praggnanandhaa"], answer: 2 },
+
+    // 4History & Culture
+    { q: "The Ajanta Caves are located in which Indian state?", options: ["Maharashtra", "Madhya Pradesh", "Gujarat", "Rajasthan"], answer: 0 },
+    { q: "Which Mughal emperor built the Taj Mahal?", options: ["Akbar", "Jahangir", "Shah Jahan", "Aurangzeb"], answer: 2 },
+    { q: "What was the first capital of the British Raj in India?", options: ["Mumbai", "Calcutta", "Delhi", "Chennai"], answer: 1 },
+    { q: "Which ancient Indian university is considered the oldest in the world?", options: ["Nalanda", "Takshashila", "Vikramshila", "Vallabhi"], answer: 1 },
+    { q: "Who was the first woman ruler of the Delhi Sultanate?", options: ["Razia Sultan", "Nur Jahan", "Mumtaz Mahal", "Jodha Bai"], answer: 0 },
+
+    // 5Geography
+    { q: "Which is India's smallest state by area?", options: ["Sikkim", "Goa", "Tripura", "Manipur"], answer: 1 },
+    { q: "The Siachen Glacier is located in which mountain range?", options: ["Himalayas", "Karakoram", "Hindu Kush", "Pir Panjal"], answer: 1 },
+    { q: "Which is India's largest freshwater lake?", options: ["Dal Lake", "Wular Lake", "Chilika Lake", "Vembanad Lake"], answer: 1 },
+    { q: "Which Indian city is known as the 'Silicon Valley of India'?", options: ["Hyderabad", "Pune", "Bangalore", "Gurgaon"], answer: 2 },
+    { q: "Which is India's easternmost state?", options: ["Assam", "Nagaland", "Manipur", "Arunachal Pradesh"], answer: 3 },
+
+    // 6Economics & Business
+    { q: "Who founded Reliance Industries?", options: ["Mukesh Ambani", "Dhirubhai Ambani", "Anil Ambani", "Ratan Tata"], answer: 1 },
+    { q: "Which Indian company acquired Jaguar Land Rover in 2008?", options: ["Mahindra", "Hero", "Tata Motors", "Maruti Suzuki"], answer: 2 },
+    { q: "What is the name of India's first digital currency launched by RBI?", options: ["e-Rupee", "Digital Rupee", "Bharatcoin", "RBI Coin"], answer: 0 },
+    { q: "Which Indian startup became the first to reach $100 billion valuation?", options: ["Flipkart", "Paytm", "BYJU'S", "None of these"], answer: 3 },
+    { q: "Who is known as the father of Indian IT Industry?", options: ["Azim Premji", "N R Narayana Murthy", "F C Kohli", "Shiv Nadar"], answer: 2 },
+
+    // 7Science & Medicine
+    { q: "Who discovered the Raman Effect?", options: ["C.V. Raman", "S.N. Bose", "Meghnad Saha", "Jagadish Chandra Bose"], answer: 0 },
+    { q: "What is the name of India's first indigenous COVID-19 vaccine?", options: ["Covishield", "Covaxin", "Sputnik V", "ZyCoV-D"], answer: 1 },
+    { q: "Which Indian scientist won the Nobel Prize for his work on light scattering?", options: ["C.V. Raman", "Har Gobind Khorana", "Subrahmanyan Chandrasekhar", "Venkatraman Ramakrishnan"], answer: 0 },
+    { q: "What is the name of India's supercomputer program?", options: ["PARAM", "SHAKTI", "PRATYUSH", "VAJRA"], answer: 0 },
+    { q: "Who is known as the father of Indian space program?", options: ["A.P.J. Abdul Kalam", "Vikram Sarabhai", "Satish Dhawan", "K. Sivan"], answer: 1 },
+
+    // 8Entertainment & Arts
+    { q: "Which Indian film was the first to be nominated for an Academy Award?", options: ["Mother India", "Lagaan", "Salaam Bombay!", "RRR"], answer: 0 },
+    { q: "Who is the first Indian to win an Oscar?", options: ["Satyajit Ray", "A.R. Rahman", "Bhanu Athaiya", "Gulzar"], answer: 2 },
+    { q: "Which Indian classical musician played the sitar at Woodstock?", options: ["Ravi Shankar", "Ali Akbar Khan", "Anoushka Shankar", "Zakir Hussain"], answer: 0 },
+    { q: "Who is known as the 'Nightingale of India' in music?", options: ["M.S. Subbulakshmi", "Lata Mangeshkar", "Asha Bhosle", "Alka Yagnik"], answer: 1 },
+    { q: "Which Indian film won the Palme d'Or at Cannes Film Festival?", options: ["Neecha Nagar", "Pather Panchali", "The Lunchbox", "Masaan"], answer: 0 },
+
+    // 9Environment & Wildlife
+    { q: "Which is India's national aquatic animal?", options: ["Dolphin", "Crocodile", "River Dolphin", "Blue Whale"], answer: 2 },
+    { q: "Which Indian state has the largest forest cover?", options: ["Madhya Pradesh", "Arunachal Pradesh", "Maharashtra", "Odisha"], answer: 0 },
+    { q: "What is the name of India's first national park?", options: ["Jim Corbett", "Kaziranga", "Bandipur", "Sundarbans"], answer: 0 },
+    { q: "Which is the largest tiger reserve in India?", options: ["Nagarjunsagar", "Bandipur", "Corbett", "Nagarhole"], answer: 0 },
+    { q: "The Great Indian Bustard Sanctuary is located in which state?", options: ["Rajasthan", "Gujarat", "Maharashtra", "Madhya Pradesh"], answer: 2 },
+
+    // 10Difficult Mixed Questions
+    { q: "Which Indian mathematician made significant contributions to infinite series?", options: ["Aryabhata", "Brahmagupta", "Srinivasa Ramanujan", "Shakuntala Devi"], answer: 2 },
+    { q: "What was the original name of Mumbai's Chhatrapati Shivaji Terminus?", options: ["Victoria Terminus", "Bombay Central", "Churchgate", "Bori Bunder"], answer: 0 },
+    { q: "Who established the first Indian Institute of Science?", options: ["Jamsetji Tata", "C.V. Raman", "Vikram Sarabhai", "Homi Bhabha"], answer: 0 },
+    { q: "Which ancient Indian text contains the earliest discussion of atomic theory?", options: ["Upanishads", "Vedas", "Vaisheshika Sutra", "Arthashastra"], answer: 2 },
+    { q: "What is the name of India's first indigenous aircraft carrier?", options: ["INS Vikrant", "INS Viraat", "INS Vikramaditya", "INS Vishal"], answer: 0 },
+    
+        // 11Literature
+    { q: "Who wrote the epic 'Mahabharata'?", options: ["Vyasa", "Kalidasa", "Valmiki", "Tulsidas"], answer: 0 },
+    { q: "Who is the author of the novel '1984'?", options: ["George Orwell", "Aldous Huxley", "J.K. Rowling", "Ernest Hemingway"], answer: 0 },
+    { q: "Which novel begins with the line 'Call me Ishmael'?", options: ["Moby-Dick", "The Great Gatsby", "Crime and Punishment", "War and Peace"], answer: 0 },
+    { q: "Who is known as the 'Shakespeare of India'?", options: ["Rabindranath Tagore", "Kalidasa", "Mirza Ghalib", "Bankim Chandra Chattopadhyay"], answer: 1 },
+    { q: "Which author wrote 'Pride and Prejudice'?", options: ["Jane Austen", "Charlotte Brontë", "Emily Dickinson", "Virginia Woolf"], answer: 0 },
+
+    // 12Current Affairs (with tech)
+    { q: "Which company developed the first commercial quantum computer?", options: ["IBM", "Google", "Microsoft", "Intel"], answer: 1 },
+    { q: "Which country became the first to approve a COVID-19 vaccine for emergency use?", options: ["China", "United States", "India", "Russia"], answer: 3 },
+    { q: "Which company acquired LinkedIn in 2016?", options: ["Microsoft", "Facebook", "Google", "Apple"], answer: 0 },
+    { q: "Who is the CEO of Tesla as of 2025?", options: ["Elon Musk", "Sundar Pichai", "Tim Cook", "Mark Zuckerberg"], answer: 0 },
+    { q: "Which country was the first to launch 5G mobile networks?", options: ["South Korea", "USA", "China", "Japan"], answer: 0 },
+
+    //13 Tech History
+    { q: "Who is known as the father of the computer?", options: ["Charles Babbage", "Alan Turing", "John von Neumann", "Bill Gates"], answer: 0 },
+    { q: "What was the first computer to be built with integrated circuits?", options: ["IBM 701", "UNIVAC I", "IBM 1401", "CDC 6600"], answer: 3 },
+    { q: "In what year was the first iPhone released?", options: ["2005", "2006", "2007", "2008"], answer: 2 },
+    { q: "What was the first video game ever made?", options: ["Space Invaders", "Pong", "Tennis for Two", "Super Mario Bros"], answer: 2 },
+    { q: "Who founded Microsoft?", options: ["Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Larry Page"], answer: 1 },
+
+    // 14General Knowledge
+    { q: "Which planet is known as the 'Red Planet'?", options: ["Mars", "Venus", "Earth", "Jupiter"], answer: 0 },
+    { q: "Which is the largest mammal?", options: ["Elephant", "Blue Whale", "Giraffe", "Shark"], answer: 1 },
+    { q: "Who invented the telephone?", options: ["Alexander Graham Bell", "Nikola Tesla", "Thomas Edison", "Michael Faraday"], answer: 0 },
+    { q: "What is the smallest bone in the human body?", options: ["Stapes", "Femur", "Radius", "Coccyx"], answer: 0 },
+    { q: "Which is the longest river in the world?", options: ["Amazon", "Nile", "Yangtze", "Ganges"], answer: 1 },
+
+    // 15World History
+    { q: "In which year did World War II end?", options: ["1943", "1944", "1945", "1946"], answer: 2 },
+    { q: "Who was the first President of the United States?", options: ["Abraham Lincoln", "George Washington", "Thomas Jefferson", "John Adams"], answer: 1 },
+    { q: "What was the name of the ship on which the Pilgrims traveled to America in 1620?", options: ["Mayflower", "Santa Maria", "Endeavour", "Discovery"], answer: 0 },
+    { q: "Which empire was ruled by Genghis Khan?", options: ["Mongol Empire", "Ottoman Empire", "Roman Empire", "Byzantine Empire"], answer: 0 },
+    { q: "Who was the last Pharaoh of Egypt?", options: ["Cleopatra", "Nefertiti", "Ramesses II", "Tutankhamun"], answer: 0 },
+
+    // 16Geography
+    { q: "What is the capital city of Australia?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: 2 },
+    { q: "Which continent is the Sahara Desert located on?", options: ["Africa", "Asia", "North America", "Australia"], answer: 0 },
+    { q: "Which is the largest island in the world?", options: ["Greenland", "Australia", "New Guinea", "Borneo"], answer: 0 },
+    { q: "What is the tallest mountain in the world?", options: ["Mount Everest", "K2", "Kangchenjunga", "Mount Kilimanjaro"], answer: 0 },
+    { q: "Which ocean is the largest in the world?", options: ["Atlantic Ocean", "Indian Ocean", "Southern Ocean", "Pacific Ocean"], answer: 3 },
+
+    // 17Technology
+    { q: "What does HTML stand for?", options: ["Hyper Text Markup Language", "High Text Markup Language", "Hyperlinks Text Markup Language", "None of the above"], answer: 0 },
+    { q: "Who invented the World Wide Web?", options: ["Tim Berners-Lee", "Vint Cerf", "Marc Andreessen", "Larry Page"], answer: 0 },
+    { q: "Which programming language is known as the 'language of the web'?", options: ["C++", "JavaScript", "Python", "Ruby"], answer: 1 },
+    { q: "What is the full form of 'URL'?", options: ["Uniform Resource Locator", "Universal Resource Locator", "Uniform Retrieval Locator", "None of the above"], answer: 0 },
+    { q: "Which technology is used for building responsive websites?", options: ["HTML", "CSS", "JavaScript", "All of the above"], answer: 3 },
+
+    // 18Pop Culture
+    { q: "Which movie won the Academy Award for Best Picture in 1994?", options: ["Forrest Gump", "Titanic", "The Shawshank Redemption", "The Lion King"], answer: 0 },
+    { q: "Who is known as the 'King of Pop'?", options: ["Elvis Presley", "Michael Jackson", "Prince", "Freddie Mercury"], answer: 1 },
+    { q: "Which TV series has the character 'Jon Snow'?", options: ["Game of Thrones", "Breaking Bad", "The Witcher", "Stranger Things"], answer: 0 },
+    { q: "Which fictional character lives in the 'Hobbiton'?", options: ["Frodo Baggins", "Harry Potter", "Bilbo Baggins", "Aragorn"], answer: 1 },
+    { q: "Who played the character 'Iron Man' in the Marvel Cinematic Universe?", options: ["Chris Hemsworth", "Robert Downey Jr.", "Chris Evans", "Mark Ruffalo"], answer: 1 },
+
+    // 19Sports
+    { q: "Which country hosted the 2016 Summer Olympics?", options: ["Brazil", "China", "United Kingdom", "Greece"], answer: 0 },
+    { q: "Who is known as the 'Little Master' in Indian cricket?", options: ["Kapil Dev", "Sachin Tendulkar", "Sunil Gavaskar", "Virat Kohli"], answer: 2 },
+    { q: "Which football club has won the most Champions League titles?", options: ["Barcelona", "Real Madrid", "Manchester United", "Bayern Munich"], answer: 1 },
+    { q: "Which country won the 2018 FIFA World Cup?", options: ["Germany", "Brazil", "France", "Argentina"], answer: 2 },
+    { q: "Who holds the record for most goals in a single World Cup tournament?", options: ["Ronaldo", "Miroslav Klose", "Just Fontaine", "Lionel Messi"], answer: 2 },
+
+    // 20Space and Astronomy
+    { q: "Which planet is known as the 'Morning Star'?", options: ["Venus", "Mars", "Saturn", "Jupiter"], answer: 0 },
+    { q: "What is the closest star to Earth?", options: ["Alpha Centauri", "Proxima Centauri", "The Sun", "Sirius"], answer: 2 },
+    { q: "Who was the first human to travel into space?", options: ["Yuri Gagarin", "Neil Armstrong", "Buzz Aldrin", "Valentina Tereshkova"], answer: 0 },
+    { q: "What is the name of NASA's Mars rover that landed in 2021?", options: ["Curiosity", "Perseverance", "Opportunity", "Spirit"], answer: 1 },
+    { q: "What is the largest moon of Saturn?", options: ["Titan", "Europa", "Ganymede", "Callisto"], answer: 0 },
+
+    // 21Literature
+    { q: "Who wrote the play 'Hamlet'?", options: ["William Shakespeare", "Christopher Marlowe", "Oscar Wilde", "Charles Dickens"], answer: 0 },
+    { q: "Which author wrote 'The Catcher in the Rye'?", options: ["J.D. Salinger", "Mark Twain", "F. Scott Fitzgerald", "Hemingway"], answer: 0 },
+    { q: "Who wrote 'To Kill a Mockingbird'?", options: ["Harper Lee", "John Steinbeck", "J.K. Rowling", "Jane Austen"], answer: 0 },
+    { q: "In which book does the character 'Frodo Baggins' appear?", options: ["The Hobbit", "The Lord of the Rings", "Harry Potter", "Percy Jackson"], answer: 1 },
+    { q: "Who wrote 'One Hundred Years of Solitude'?", options: ["Gabriel García Márquez", "Carlos Fuentes", "Mario Vargas Llosa", "Isabel Allende"], answer: 0 },
+
+    // 22History
+    { q: "Who was the first President of the United States?", options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"], answer: 0 },
+    { q: "Which historical event took place on July 20, 1969?", options: ["The Moon Landing", "World War II ended", "The First Man's Flight", "End of the Cold War"], answer: 0 },
+    { q: "Who was the leader of Nazi Germany during World War II?", options: ["Adolf Hitler", "Joseph Stalin", "Benito Mussolini", "Franklin D. Roosevelt"], answer: 0 },
+    { q: "Who was the first emperor of China?", options: ["Qin Shi Huang", "Emperor Wu", "Liu Bang", "Tang Taizong"], answer: 0 },
+    { q: "Which ancient civilization built the Pyramids of Giza?", options: ["Egyptian", "Mesopotamian", "Mayan", "Greek"], answer: 0 },
+
+    // 23Geography
+    { q: "Which country has the most number of time zones?", options: ["Russia", "United States", "China", "India"], answer: 0 },
+    { q: "Which is the longest river in South America?", options: ["Amazon River", "Paraná River", "Orinoco River", "Mississippi River"], answer: 0 },
+    { q: "What is the capital of Canada?", options: ["Toronto", "Vancouver", "Ottawa", "Montreal"], answer: 2 },
+    { q: "What is the largest desert in the world?", options: ["Sahara", "Gobi", "Karakum", "Antarctic Desert"], answer: 3 },
+    { q: "Which country is both an island and a continent?", options: ["Australia", "New Zealand", "Madagascar", "Borneo"], answer: 0 },
+
+    // 24Technology
+    { q: "Which company developed the first personal computer?", options: ["Apple", "IBM", "Microsoft", "Compaq"], answer: 1 },
+    { q: "What does the acronym 'URL' stand for?", options: ["Uniform Resource Locator", "Universal Resource Locator", "Uniform Retrieval Locator", "Unified Resource Locator"], answer: 0 },
+    { q: "Which programming language is known for its use in web development?", options: ["C++", "JavaScript", "Python", "Java"], answer: 1 },
+    { q: "Which company created the iPhone?", options: ["Microsoft", "Samsung", "Google", "Apple"], answer: 3 },
+    { q: "What year was Facebook founded?", options: ["2000", "2003", "2004", "2005"], answer: 2 },
+
+    // 25Science
+    { q: "What is the chemical symbol for water?", options: ["H2O", "H2O2", "O2", "CO2"], answer: 0 },
+    { q: "Which planet is closest to the sun?", options: ["Mercury", "Venus", "Earth", "Mars"], answer: 0 },
+    { q: "What is the most abundant gas in Earth's atmosphere?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"], answer: 2 },
+    { q: "Which part of the human body produces insulin?", options: ["Liver", "Pancreas", "Kidneys", "Lungs"], answer: 1 },
+    { q: "Which element is represented by the symbol 'Na' on the periodic table?", options: ["Sodium", "Nitrogen", "Neon", "Nickel"], answer: 0 },
+
+    // 26Pop Culture
+    { q: "Who starred as 'Jack Dawson' in Titanic?", options: ["Johnny Depp", "Brad Pitt", "Leonardo DiCaprio", "Matt Damon"], answer: 2 },
+    { q: "Who is the creator of the 'Harry Potter' series?", options: ["J.K. Rowling", "J.R.R. Tolkien", "C.S. Lewis", "George R.R. Martin"], answer: 0 },
+    { q: "Which film won the Academy Award for Best Picture in 2017?", options: ["La La Land", "Moonlight", "The Revenant", "Spotlight"], answer: 1 },
+    { q: "Who is the lead singer of Coldplay?", options: ["Chris Martin", "Bono", "James Hetfield", "Ed Sheeran"], answer: 0 },
+    { q: "Which pop star is known for the hit song 'Bad Romance'?", options: ["Beyoncé", "Lady Gaga", "Ariana Grande", "Katy Perry"], answer: 1 },
+
+    // 27Sports
+    { q: "Which country won the 2016 UEFA European Football Championship?", options: ["Portugal", "Spain", "France", "Germany"], answer: 0 },
+    { q: "Who holds the record for most home runs in MLB history?", options: ["Babe Ruth", "Barry Bonds", "Hank Aaron", "Alex Rodriguez"], answer: 1 },
+    { q: "In which sport would you perform a slam dunk?", options: ["Basketball", "Volleyball", "Football", "Baseball"], answer: 0 },
+    { q: "Which country hosted the 2008 Summer Olympics?", options: ["China", "United States", "Greece", "Australia"], answer: 0 },
+    { q: "Which country won the first FIFA World Cup in 1930?", options: ["Brazil", "Argentina", "Uruguay", "Italy"], answer: 2 },
+
+    // 28Space and Astronomy
+    { q: "What is the name of the first artificial satellite launched into space?", options: ["Sputnik 1", "Apollo 11", "Hubble", "Explorer 1"], answer: 0 },
+    { q: "Which planet is known as the 'Giant Red Spot' planet?", options: ["Jupiter", "Saturn", "Mars", "Neptune"], answer: 0 },
+    { q: "What is the name of the galaxy we live in?", options: ["Milky Way", "Andromeda", "Sombrero", "Whirlpool"], answer: 0 },
+    { q: "What is the closest galaxy to the Milky Way?", options: ["Andromeda", "Triangulum", "Sculptor", "Pinwheel"], answer: 0 },
+    { q: "Which famous space telescope was launched in 1990?", options: ["Hubble Space Telescope", "James Webb", "Kepler Space Telescope", "Chandra X-ray Observatory"], answer: 0 },
+
+    // 29Technology and Innovation
+    { q: "Which was the first successful human organ to be transplanted?", options: ["Heart", "Kidney", "Liver", "Cornea"], answer: 1 },
+    { q: "In which year was the first email sent?", options: ["1969", "1971", "1980", "1991"], answer: 1 },
+    { q: "Who invented the first electric lightbulb?", options: ["Nikola Tesla", "Albert Einstein", "Thomas Edison", "Benjamin Franklin"], answer: 2 },
+    { q: "Which company first developed the operating system called 'Android'?", options: ["Apple", "Microsoft", "Google", "IBM"], answer: 2 },
+    { q: "What does the 'http' stand for in website URLs?", options: ["Hyper Text Transmission Protocol", "Hyper Text Transfer Protocol", "High Tech Text Protocol", "Hyperlink Transmission Process"], answer: 1 },
+
+    // 30General Knowledge
+    { q: "Which is the longest-running television series in the U.S.?", options: ["Friends", "The Simpsons", "The Office", "Grey's Anatomy"], answer: 1 },
+    { q: "In what year was the United Nations founded?", options: ["1940", "1945", "1950", "1960"], answer: 1 },
+    { q: "What is the capital of Brazil?", options: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"], answer: 2 },
+    { q: "Who invented the World Wide Web?", options: ["Mark Zuckerberg", "Bill Gates", "Tim Berners-Lee", "Steve Jobs"], answer: 2 },
+    { q: "Which color has the longest wavelength?", options: ["Red", "Blue", "Green", "Yellow"], answer: 0 },
+
+    // 31Miscellaneous
+    { q: "Who was the first woman to fly solo across the Atlantic?", options: ["Amelia Earhart", "Bessie Coleman", "Valentina Tereshkova", "Sally Ride"], answer: 0 },
+    { q: "What is the name of the first computer virus?", options: ["ILOVEYOU", "Creeper", "MyDoom", "Sasser"], answer: 1 },
+    { q: "Which company did Elon Musk found in 2002?", options: ["Tesla", "SpaceX", "Neuralink", "The Boring Company"], answer: 1 },
+    { q: "What is the largest ocean on Earth?", options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"], answer: 3 },
+    { q: "Who discovered the law of gravity?", options: ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Nikola Tesla"], answer: 0 },
+    { q: "Which novel is considered the first modern novel?", options: ["Pride and Prejudice", "Don Quixote", "War and Peace", "Moby-Dick"], answer: 1 },
+    { q: "Who wrote 'The Brothers Karamazov'?", options: ["Leo Tolstoy", "Fyodor Dostoevsky", "Anton Chekhov", "Nikolai Gogol"], answer: 1 },
+    { q: "Which Shakespearean play contains the line 'All the world's a stage'?", options: ["Hamlet", "Macbeth", "As You Like It", "King Lear"], answer: 2 },
+    { q: "Which novel features the character Jay Gatsby?", options: ["The Great Gatsby", "Tender Is the Night", "This Side of Paradise", "Catch-22"], answer: 0 },
+    { q: "Who wrote 'Crime and Punishment'?", options: ["Leo Tolstoy", "Anton Chekhov", "Fyodor Dostoevsky", "Franz Kafka"], answer: 2 },
+    { q: "Who was the first emperor of China?", options: ["Kublai Khan", "Emperor Meiji", "Qin Shi Huang", "Sun Yat-sen"], answer: 2 },
+    { q: "Which war was triggered by the assassination of Archduke Franz Ferdinand?", options: ["World War I", "World War II", "Crimean War", "Napoleonic Wars"], answer: 0 },
+    { q: "Which civilization built Machu Picchu?", options: ["Aztecs", "Mayans", "Incas", "Olmecs"], answer: 2 },
+    { q: "Who was the longest-reigning British monarch before Queen Elizabeth II?", options: ["Queen Victoria", "Henry VIII", "George III", "Elizabeth I"], answer: 0 },
+    { q: "Which historical event is referred to as 'The Shot Heard Round the World'?", options: ["Start of the American Revolution", "Start of World War I", "Start of the French Revolution", "Pearl Harbor Attack"], answer: 0 },
+    { q: "Which company developed the GPT-4 AI model?", options: ["Google", "OpenAI", "Meta", "Amazon"], answer: 1 },
+    { q: "Which billionaire acquired Twitter in 2022?", options: ["Jeff Bezos", "Elon Musk", "Bill Gates", "Mark Zuckerberg"], answer: 1 },
+    { q: "What was the name of Apple's first mixed-reality headset, announced in 2023?", options: ["Apple Vision Pro", "Apple Reality One", "Apple ARKit", "Apple Immersion"], answer: 0 },
+    { q: "Which country became the first to land a rover on the Moon's south pole in 2023?", options: ["USA", "Russia", "India", "China"], answer: 2 },
+    { q: "What is the name of the AI chatbot launched by Google to compete with ChatGPT?", options: ["Bard", "Gemini", "DeepMind", "Lambda"], answer: 1 },
+    { q: "Who is credited with inventing the World Wide Web?", options: ["Bill Gates", "Tim Berners-Lee", "Steve Jobs", "Vint Cerf"], answer: 1 },
+    { q: "Which company developed the first commercially available microprocessor?", options: ["IBM", "Intel", "AMD", "Texas Instruments"], answer: 1 },
+    { q: "What was the first-ever web browser called?", options: ["Internet Explorer", "Mosaic", "Netscape Navigator", "WorldWideWeb"], answer: 3 },
+    { q: "Who co-founded Microsoft with Bill Gates?", options: ["Steve Jobs", "Paul Allen", "Elon Musk", "Mark Zuckerberg"], answer: 1 },
+    { q: "Which computer virus was the first to spread via email attachments?", options: ["Melissa", "ILOVEYOU", "WannaCry", "Code Red"], answer: 1 },
+    { q: "What is the most abundant element in the Earth's crust?", options: ["Oxygen", "Silicon", "Aluminum", "Iron"], answer: 0 },
+    { q: "Which fundamental force is the weakest but has an infinite range?", options: ["Gravity", "Electromagnetism", "Strong Nuclear Force", "Weak Nuclear Force"], answer: 0 },
+    { q: "What is the only planet in the Solar System that rotates clockwise?", options: ["Venus", "Mars", "Uranus", "Neptune"], answer: 0 },
+    { q: "Which physicist proposed the uncertainty principle?", options: ["Albert Einstein", "Max Planck", "Werner Heisenberg", "Richard Feynman"], answer: 2 },
+    { q: "What type of electromagnetic waves have the shortest wavelength?", options: ["Gamma Rays", "X-Rays", "Ultraviolet", "Infrared"], answer: 0 },
+    { q: "In Greek mythology, who was the Titan condemned to hold up the sky?", options: ["Atlas", "Prometheus", "Cronus", "Hyperion"], answer: 0 },
+    { q: "Who is the Norse god of mischief?", options: ["Thor", "Odin", "Loki", "Freyr"], answer: 2 },
+    { q: "Which Hindu deity is known as the 'Destroyer'?", options: ["Brahma", "Vishnu", "Shiva", "Indra"], answer: 2 },
+    { q: "Which Egyptian god was the ruler of the underworld?", options: ["Osiris", "Ra", "Anubis", "Horus"], answer: 0 },
+    { q: "What was the name of the legendary sword of King Arthur?", options: ["Durandal", "Excalibur", "Joyeuse", "Gram"], answer: 1 },
+    { q: "Who wrote The Republic?", options: ["Socrates", "Plato", "Aristotle", "Descartes"], answer: 1 },
+    { q: "Which philosopher coined the phrase 'I think, therefore I am'?", options: ["Plato", "Descartes", "Nietzsche", "Kant"], answer: 1 },
+    { q: "Which German philosopher wrote Thus Spoke Zarathustra?", options: ["Karl Marx", "Immanuel Kant", "Friedrich Nietzsche", "Georg Hegel"], answer: 2 },
+    { q: "What is the term for the ethical theory that maximizes happiness for the greatest number?", options: ["Deontology", "Virtue Ethics", "Utilitarianism", "Existentialism"], answer: 2 },
+    { q: "Who is known as the 'father of Western philosophy'?", options: ["Aristotle", "Plato", "Socrates", "Descartes"], answer: 2 },
+    { q: "Who was the first U.S. president to resign from office?", options: ["Richard Nixon", "Bill Clinton", "Andrew Johnson", "Herbert Hoover"], answer: 0 },
+    { q: "Which country was the first to grant women the right to vote?", options: ["USA", "UK", "New Zealand", "France"], answer: 2 },
+    { q: "Which treaty ended World War I?", options: ["Treaty of Versailles", "Treaty of Paris", "Treaty of Vienna", "Treaty of Ghent"], answer: 0 },
+    { q: "Who was the first Prime Minister of India?", options: ["Sardar Patel", "Jawaharlal Nehru", "Mahatma Gandhi", "Lal Bahadur Shastri"], answer: 1 },
+    { q: "What is the supreme law of the United States?", options: ["The Constitution", "The Bill of Rights", "The Declaration of Independence", "The Federalist Papers"], answer: 0 },
+
+
+        ];  // Add your questions here
+        
+    let shuffledQuestions = [];
+let currentIndex = 0;
+let moneyTree = [
+    "₹5,000", "₹10,000", "₹20,000", "₹40,000", "₹80,000",
+    "₹1,60,000", "₹3,20,000", "₹6,40,000", "₹12,50,000",
+    "₹25,00,000", "₹50,00,000", "₹1 Crore"
+];
+
+// Shuffle the questions array
+function shuffleQuestions() {
+    shuffledQuestions = [...questions]; // Clone original array
+    for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+    }
+}
+
+// Function to update the money tree display
+function updateMoneyTree(questionNumber) {
+    document.querySelectorAll('.money-level').forEach((level, index) => {
+        level.classList.remove('current');
+        if (11 - index === questionNumber - 1) {
+            level.classList.add('current');
+        }
+    });
+}
+
+// Function to load a question
+function loadQuestion() {
+    if (currentIndex >= shuffledQuestions.length) {
+        showPopup("Congratulations! You won ₹1 Crore!");
+        return;
+    }
+    
+    updateMoneyTree(currentIndex + 1);
+    
+    let q = shuffledQuestions[currentIndex];
+    document.getElementById("question").innerText = q.q;
+    q.options.forEach((opt, i) => {
+        let optionElem = document.getElementById(`opt${i}`);
+        optionElem.innerText = String.fromCharCode(65 + i) + ": " + opt;
+        optionElem.style.background = "linear-gradient(45deg, #0d47a1, #1976d2)";
+        optionElem.style.pointerEvents = "auto";
+        optionElem.style.visibility = "visible";
+        optionElem.classList.remove('blink-green', 'blink-red');
+    });
+}
+
+// Function to show a popup with a message
+function showPopup(message, popupId = 'gamePopup') {
+    document.getElementById("overlay").style.display = "block";
+    document.getElementById(popupId).style.display = "block";
+    if (popupId === 'gamePopup') {
+        document.getElementById("popupMessage").innerText = message;
+    }
+}
+
+// Function to close a popup
+function closePopup(popupId) {
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById(popupId).style.display = "none";
+}
+
+// Function to use Audience Poll lifeline
+function useAudiencePoll() {
+    let correctIndex = shuffledQuestions[currentIndex].answer;
+    let polls = [0, 0, 0, 0];
+    
+    // Generate realistic-looking poll results
+    let correctPercentage = Math.floor(Math.random() * 31) + 40; // 40-70%
+    polls[correctIndex] = correctPercentage;
+    
+    let remaining = 100 - correctPercentage;
+    for (let i = 0; i < 4; i++) {
+        if (i !== correctIndex) {
+            let value = Math.floor(Math.random() * remaining);
+            polls[i] = value;
+            remaining -= value;
+        }
+    }
+    polls[polls.indexOf(Math.min(...polls))] += remaining;
+
+    // Display results
+    showPopup("", 'audiencePollPopup');
+    polls.forEach((percentage, index) => {
+        let pollBar = document.getElementById(`poll${String.fromCharCode(65 + index)}`);
+        pollBar.style.height = `${percentage}%`;
+        pollBar.querySelector('.poll-percentage').innerText = `${percentage}%`;
+        
+        // Add option letter for reference
+        let optionLetter = String.fromCharCode(65 + index);
+        pollBar.setAttribute('data-option', optionLetter);
+    });
+    
+    document.getElementById('lifeline-audience').classList.add('used');
+    document.getElementById('lifeline-audience').disabled = true;
+}
+
+// Function to use 50-50 lifeline
+function use5050() {
+    let correctIndex = shuffledQuestions[currentIndex].answer;
+    let availableWrongAnswers = [0,1,2,3].filter(i => i !== correctIndex);
+    let keepWrongAnswer = availableWrongAnswers[Math.floor(Math.random() * availableWrongAnswers.length)];
+    
+    [0,1,2,3].forEach(i => {
+        if (i !== correctIndex && i !== keepWrongAnswer) {
+            document.getElementById(`opt${i}`).style.visibility = "hidden";
+        }
+    });
+    
+    document.getElementById('lifeline-5050').classList.add('used');
+    document.getElementById('lifeline-5050').disabled = true;
+}
+
+// Function to use Phone a Friend lifeline
+function usePhoneAFriend() {
+    let correctIndex = shuffledQuestions[currentIndex].answer;
+    let correctAnswer = String.fromCharCode(65 + correctIndex);
+    let confidence = Math.random();
+    let friendThinking = document.querySelector('.friend-thinking');
+    let friendAnswer = document.getElementById('friendAnswer');
+    
+    showPopup("", 'phoneFriendPopup');
+    
+    setTimeout(() => {
+        friendThinking.style.display = 'none';
+        
+        if (confidence > 0.3) {
+            // Friend is confident and gives correct answer
+            friendAnswer.innerText = `I'm quite sure it's ${correctAnswer}. The answer should be ${shuffledQuestions[currentIndex].options[correctIndex]}.`;
+        } else {
+            // Friend is unsure, might give wrong answer
+            let guessIndex = Math.floor(Math.random() * 4);
+            let guessAnswer = String.fromCharCode(65 + guessIndex);
+            friendAnswer.innerText = `I'm not entirely sure, but I think it might be ${guessAnswer}. You should use your own judgment though.`;
+        }
+    }, 3000);
+    
+    document.getElementById('lifeline-phone').classList.add('used');
+    document.getElementById('lifeline-phone').disabled = true;
+}
+
+// Function to flip to the next question
+function useFlip() {
+    currentIndex++;
+    loadQuestion();
+    document.getElementById('lifeline-flip').classList.add('used');
+    document.getElementById('lifeline-flip').disabled = true;
+}
+
+// Function to check the answer
+function checkAnswer(selected) {
+    for (let i = 0; i < 4; i++) {
+        document.getElementById(`opt${i}`).style.pointerEvents = "none";
+    }
+
+    let correctIndex = shuffledQuestions[currentIndex].answer;
+    let selectedOption = document.getElementById(`opt${selected}`);
+
+    if (selected === correctIndex) {
+        selectedOption.classList.add('blink-green');
+        setTimeout(() => {
+            currentIndex++;
+            loadQuestion();
+        }, 2000);
+    } else {
+        selectedOption.classList.add('blink-red');
+        let correctOption = document.getElementById(`opt${correctIndex}`);
+        correctOption.classList.add('blink-green');
+        setTimeout(() => {
+            showPopup(`Game Over! You won ${moneyTree[currentIndex > 0 ? currentIndex - 1 : 0]}`);
+        }, 2000);
+    }
+}
+
+// Function to restart the game
+function restartGame() {
+    closePopup('gamePopup');
+    currentIndex = 0; // Reset the current index to 0
+    shuffleQuestions(); // Shuffle the questions again for a fresh start
+    loadQuestion(); // Load the first random question
+    document.querySelectorAll('.lifeline').forEach(lifeline => {
+        lifeline.classList.remove('used');
+        lifeline.disabled = false;
+    });
+}
+
+
+// Initialize the game
+shuffleQuestions();
+loadQuestion();
+    ;  // <-- THIS is where the function ends
+</script>
